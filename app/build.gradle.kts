@@ -69,10 +69,10 @@ dependencies {
 	implementation("androidx.compose.runtime:runtime-livedata:1.7.2")
 
 	// CameraX
-//	implementation("androidx.camera:camera-core:1.3.4")
-//	implementation("androidx.camera:camera-camera2:1.3.4")
-//	implementation("androidx.camera:camera-lifecycle:1.3.4")
-//	implementation("androidx.camera:camera-view:1.3.4")
+	implementation("androidx.camera:camera-core:1.3.4")
+	implementation("androidx.camera:camera-camera2:1.3.4")
+	implementation("androidx.camera:camera-lifecycle:1.3.4")
+	implementation("androidx.camera:camera-view:1.3.4")
 
 	// Jetpack Compose
 	implementation("androidx.compose.ui:ui:1.7.2")

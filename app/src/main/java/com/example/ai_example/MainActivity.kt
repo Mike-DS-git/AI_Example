@@ -1,15 +1,18 @@
 package com.example.ai_example
 
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,7 +29,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -41,6 +43,30 @@ class MainActivity : ComponentActivity() {
 	private lateinit var cameraExecutor: ExecutorService
 
 	private val mainViewModel: MainViewModel by viewModels()
+
+	private val photoResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+		if (result.resultCode == RESULT_OK) {
+			val data: Intent? = result.data
+			val imageUriString = data?.getStringExtra("data")
+			val imageUri = Uri.parse(imageUriString)
+
+			val bitmap = try {
+				val inputStream = contentResolver.openInputStream(imageUri)
+				BitmapFactory.decodeStream(inputStream)
+			} catch (e: Exception) {
+				e.printStackTrace()
+				Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+				null
+			} ?: return@registerForActivityResult
+
+			try {
+				mainViewModel.detectImage(this, bitmap)
+			} catch (e: IOException) {
+				e.printStackTrace()
+				Toast.makeText(this, "Failed to detect image", Toast.LENGTH_SHORT).show()
+			}
+		}
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -62,6 +88,7 @@ class MainActivity : ComponentActivity() {
 						ImagePreview()
 						LabelPreview()
 						DownloadSectionButton()
+						TakePhotoButton()
 					}
 				}
 			}
@@ -177,6 +204,24 @@ class MainActivity : ComponentActivity() {
 			} else {
 				// Handle error case (e.g., show error message)
 			}
+		}
+	}
+
+	@Composable
+	private fun TakePhotoButton() {
+		Button(
+			onClick = {
+				photoResultLauncher.launch(Intent(this, CameraActivity::class.java))
+			},
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			colors = ButtonDefaults.buttonColors(
+				containerColor = Color.Blue,    // Button background color
+				contentColor = Color.White      // Title (text) color
+			)
+		) {
+			Text(text = "Take photo")
 		}
 	}
 }
